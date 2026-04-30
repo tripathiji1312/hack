@@ -289,11 +289,13 @@ GRL lambda schedule (sigmoid ramp-up):
 Architecture:
   Score_kw  = cos(z_phn, p_kw)                    [keyword match]
   Score_spk = cos(z_spk, p_spk)                   [speaker match]
-  Score_joint = w_kw · Score_kw + w_spk · Score_spk  [w_kw=0.55, w_spk=0.45]
-  Score_smooth = EMA(Score_joint, α=0.7)           [temporal smoothing]
-  D = 𝟙[Score_smooth ≥ τ]                         [DET-calibrated threshold]
-
-Params: ~30K (learned weights + projection)
+  
+  # Temporal Smoothing on Independent Streams
+  KW_smooth  = EMA(Score_kw, α=0.7)
+  SPK_smooth = EMA(Score_spk, α=0.7)           
+  
+  # Strict AND Gate (Multiplicative Masking)
+  D = 𝟙[KW_smooth ≥ τ_kw] AND 𝟙[SPK_smooth ≥ τ_spk]
 ```
 
 ---
